@@ -1,0 +1,94 @@
+program: trials/scripts/train_trials.py
+method: bayes
+metric:
+  name: test/final_sharpe_ratio
+  goal: maximize
+parameters:
+  feature-extractor-num-heads:
+    values:
+    - 2
+    - 4
+  train-steps:
+    values:
+    - 5
+    - 10
+  feature-extractor-num-layers:
+    values:
+    - 1
+    - 2
+    - 3
+  dropout:
+    values:
+    - 0.0
+    - 0.1
+  ent-coef:
+    values:
+    - 0.1
+    - 0.2
+  learning-rate:
+    values:
+    - 6e-12
+    - 6e-13
+  feature-extractor-hidden-dim:
+    values:
+    - 64
+    - 128
+  policy-network-hidden-dim:
+    values:
+    - 64
+    - 128
+    - 256
+  seed:
+    values:
+    - 1
+    - 13
+    - 42
+    - 30
+    - 5
+  trading-feature-extractor-num-heads:
+    values:
+    - 2
+    - 4
+  trading-train-steps:
+    values:
+    - 1000
+    - 2000
+  trading-feature-extractor-num-layers:
+    values:
+    - 1
+    - 2
+    - 3
+  trading-dropout:
+    values:
+    - 0.0
+    - 0.1
+  trading-ent-coef:
+    values:
+    - 0.6
+  trading-rl-gamma:
+    values:
+    - 0.8
+    - 1.0
+  trading-learning-rate:
+    values:
+    - 6e-4
+    - 6e-5
+    - 6e-6
+  trading-feature-extractor-hidden-dim:
+    values:
+    - 64
+    - 128
+early_terminate:
+  type: hyperband
+  min_iter: 5
+command:
+  - poetry
+  - run
+  - python
+  - ${program}
+  - "--feature-extractor=gru"
+  - "--policy=serial_selection"
+  - "--eval-freq=5"
+  - "--rolling-serial=3"
+  - "--trading-num-process=48"
+  - ${args}
