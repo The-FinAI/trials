@@ -1,9 +1,27 @@
-# TRIALS
+# Trials
+[![zh](https://img.shields.io/badge/lang-zh-red.svg)](https://github.com/chancefocus/trials/blob/jiminHuang-patch-1/README.zh.md)
+[![en](https://img.shields.io/badge/lang-en-green.svg)](https://github.com/chancefocus/trials/blob/jiminHuang-patch-1/README.md)
+[![python](https://img.shields.io/badge/-Python_3.8-blue?logo=python&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![pytorch](https://img.shields.io/badge/PyTorch_1.8+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org/get-started/locally/)
+[![black](https://img.shields.io/badge/Code%20Style-Black-black.svg?labelColor=gray)](https://black.readthedocs.io/en/stable/)
+[![pre-commit](https://img.shields.io/badge/Pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+[![poetry](https://img.shields.io/badge/Poetry-config-informational?logo=poetry&logoColor=white)](https://python-poetry.org)
+[![license](https://img.shields.io/badge/License-MIT-green.svg?labelColor=gray)](https://github.com/lazaratan/dyn-gfn/blob/main/LICENSE)
+
 自动配对交易
 
-## 说明
 
-我们提出 BanditPair，第一个基于 RL 的股票对选择框架。BanditPair将股票对选择视为bandit问题，可以直接最大化未来交易利润。有关我们的论文，请参阅[http link](https://arxiv.org/abs/2301.10724)
+<img
+src="assets/trials.jpg"
+title="Trials Overview"
+style="display: inline-block; margin: 0 auto; max-width: 800px">
+
+## Description
+Trials提供了[Select and Trade](https://arxiv.org/abs/2301.10724)的实现，提出了一种使用层次强化学习进行配对交易的新的范式，能够端到端的同时学习配对选择和交易。在中美两国股票数据集的结果证明了提出方法的有效性。
+
+
+## Maintainer
+[张博艺](https://github.com/zbgzbgzbg)
 
 
 ## 预备条件
@@ -23,7 +41,7 @@
 - `pre-commit`, 规范git提交代码的钩子
 - `commitizen`, 语义版本管理器
 
-##  TRIALS的数据预处理
+##  数据预处理
 
 1. 下载目标股票的代号，将包含目标股票代号的.csv文件放入selected_symbol_path；下载处理后的数据，将所有包含股票数据的 .csv 文件放入 stock_path Tiingo. Tiingo stock
 
@@ -69,7 +87,7 @@ python trials/preprocess/rolling.py stock_data_path store_path training_month va
 
 6. 我们提供了一部分处理好的数据集，请在/trials/data/里查看。
 
-## TRIALS
+## 如何运行
 
 1. 单次运行
 
@@ -106,73 +124,7 @@ wandb agent xxx/xxxxxxx/[sweep-id]
 bash train_trials.sh [sweep-id] [num-process-per-gpu]
 ```
 
-## 开发
-
-1. 通过运行以下命令安装项目的开发和生产依赖项：
-
-```
-poetry install
-
-```
-
-1. 安装 `pre-commit`
-
-```
-poetry run pre-commit install
-poetry run pre-commit install --hook-type commit-msg
-
-```
-
-1. 确认 `pre-commit`
-
-```
-poetry run pre-commit run --all-files
-
-```
-
-1. 在 IDE 中编写代码（推荐使用 Visual Studio Code！）
-2. 在本地开发环境中运行单元测试
-
-```
-poetry run nosetests -w tests/unit
-
-```
-
-1. 单元测试通过后，提交更改
-2. 检查 `pre-commit` 检查是否通过
-3. 将代码更改推送到远程仓库
-4. If CI passed and code quality is ok, bump version with `commitizen`
-
-```
-poetry run cz bump --files-only
-
-```
-
-1. 用 `towncrier` 写更新日志
-    1. 在 `CHANGES/` 中创建一个新的临时片段
-    2. 生成变更日志
-
-    ```
-    poetry run towncrier
-    
-    ```
-
-    3. 删除临时片段
-2. 提交更改并将更改推送到远程仓库
-
-## 贡献规则
-
-- 克隆这个仓库
-- 首先创建`issues`
-- 创建本地分支并推送到远程
-- **不要** 直接推送到 `main` 分支
-- 创建远程分支的 `pull request` 
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-## 引用我们的论文
+## 引用
 ```
 @misc{han2023select,
       title={Select and Trade: Towards Unified Pair Trading with Hierarchical Reinforcement Learning}, 

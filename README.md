@@ -14,7 +14,7 @@ Automatic Pair Trading
 <img
 src="assets/trials.jpg"
 title="Trials Overview"
-style="display: inline-block; margin: 0 auto; max-width: 300px">
+style="display: inline-block; margin: 0 auto; max-width: 800px">
 
 ## Description
 Our codebase trials provide an implementation of the [Select and Trade](https://arxiv.org/abs/2301.10724) paper, which proposes a new paradigm for pair trading using hierarchical reinforcement learning. It includes the code for the proposed method and experimental results on real-world stock data to demonstrate its effectiveness.
