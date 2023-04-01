@@ -10,6 +10,12 @@
 
 Automatic Pair Trading
 
+
+<img
+src="assets/trials.jpg"
+title="Trials Overview"
+style="display: inline-block; margin: 0 auto; max-width: 300px">
+
 ## Description
 Our codebase trials provide an implementation of the [Select and Trade](https://arxiv.org/abs/2301.10724) paper, which proposes a new paradigm for pair trading using hierarchical reinforcement learning. It includes the code for the proposed method and experimental results on real-world stock data to demonstrate its effectiveness.
 
@@ -34,7 +40,7 @@ The requirements to develop the project.
 - `pre-commit`, a git commit hook runner
 - `commitizen`, a semantic version manager
 
-## Data Preparation For  TRIALS
+## Data Preparation
 
 1. Download the symbols of target stocks and put the .csv file containing the symbols of the target stocks into selected_symbol_path； Download the processed data put all .csv files containing stock datas into stock_path
 
@@ -81,7 +87,7 @@ python trials/preprocess/rolling.py stock_data_path store_path training_month va
 6. We provide a subset of the processed dataset, please check it in /trials/data/.
 
 
-## TRIALS
+## How to Run?
 
 1. Single Run
 
@@ -118,67 +124,6 @@ Or you can start multiple agents with the script:
 bash train_trials.sh [sweep-id] [num-process-per-gpu]
 ```
 
-## Development
-
-1. Install dev and production dependencies of the project by running:
-
-```
-poetry install
-
-```
-
-1. Install `pre-commit`
-
-```
-poetry run pre-commit install
-poetry run pre-commit install --hook-type commit-msg
-
-```
-
-1. Verify `pre-commit`
-
-```
-poetry run pre-commit run --all-files
-
-```
-
-1. Write your code in your IDE (Visual Studio Code is recommended!)
-2. Run unittest in your local dev environment
-
-```
-poetry run nosetests -w tests/unit
-
-```
-
-1. After unittest passed, commit the changes
-2. Check if `pre-commit` check passed
-3. Push code changes to remote repository
-4. If CI passed and code quality is ok, bump version with `commitizen`
-
-```
-poetry run cz bump --files-only
-
-```
-
-1. Write changelog with `towncrier`
-    1. create a new temporary fragement in `CHANGES/`
-    2. generate changelog
-
-    ```
-    poetry run towncrier
-    
-    ```
-
-    3. remove temporary fragement
-2. Commit and push changes to remote repository
-
-## Contribution Rules
-
-- Clone this repository
-- Create `issues` first
-- Create local branch and push to remote
-- **DO NOT** push directly to `main` branch
-- Create `pull request` with remote branch
 
 ## License
 
