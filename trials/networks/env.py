@@ -12,10 +12,10 @@ from stable_baselines3 import A2C
 from stable_baselines3.a2c import MultiInputPolicy
 from stable_baselines3.common.preprocessing import preprocess_obs
 from stable_baselines3.common.utils import obs_as_tensor
-from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 import wandb
-from trials.networks.callbacks import TradEvalCallback, TradingEvalCallback
+from trials.networks.callbacks import TradingEvalCallback
 from trials.networks.constant import Action, PositionState
 from trials.networks.feature_extractor import TRADING_FEATURE_EXTRACTORS
 from trials.scripts.eval_cointegration import CointegrationStateMachine
@@ -273,7 +273,7 @@ class TradingEnv(gym.Env):
 
         return figure
 
-    def eval(self, model, commit):
+    def eval(self, model, step):
         obs = self.reset()
         tensor_obs = obs_as_tensor(obs, model.device)
         probs = model.policy.get_distribution(tensor_obs)
@@ -359,7 +359,7 @@ class TradingEnv(gym.Env):
         wandb_dict[f"{self.name}/trajectory_figure"] = wandb.Image(figure)
         wandb.log(
             wandb_dict,
-            commit=commit,
+            step=step
         )
 
 
@@ -449,6 +449,28 @@ class ReinforceTradingEnv(TradingEnv):
                     )
 
         logger.info(f"Start trading training")
+        trad_date = list(self.form_date[-self.window_size :])
+        trad_date.extend(self.trad_date)
+        self.trad_date = trad_date
+
+        self.trad_asset_log_prices = np.concatenate(
+            [
+                self.form_asset_log_prices[:, -self.window_size :],
+                self.trad_asset_log_prices,
+            ],
+            axis=1,
+        )
+        self.trad_asset_log_prices = np.exp(self.trad_asset_log_prices)
+        self.trad_asset_log_prices = (
+            self.trad_asset_log_prices / self.trad_asset_log_prices[:, :1]
+        )
+        self.trad_asset_log_prices = np.log(self.trad_asset_log_prices)
+
+        self.form_asset_log_prices = np.exp(self.form_asset_log_prices)
+        self.form_asset_log_prices = (
+            self.form_asset_log_prices / self.form_asset_log_prices[:, :1]
+        )
+        self.form_asset_log_prices = np.log(self.form_asset_log_prices)
 
         def initialize_env(name, date, names, prices):
             if name == "train":
@@ -473,36 +495,6 @@ class ReinforceTradingEnv(TradingEnv):
                         )
                     ]
                 )
-
-        trad_date = list(self.form_date[-self.window_size :])
-        trad_date.extend(self.trad_date)
-        self.trad_date = trad_date
-
-        self.trad_asset_log_prices = np.concatenate(
-            [
-                self.form_asset_log_prices[:, -self.window_size :],
-                self.trad_asset_log_prices,
-            ],
-            axis=1,
-        )
-        self.trad_asset_log_prices = np.exp(self.trad_asset_log_prices)
-        self.trad_asset_log_prices = (
-            self.trad_asset_log_prices / self.trad_asset_log_prices[:, :1]
-        )
-        self.trad_asset_log_prices = np.log(self.trad_asset_log_prices)
-
-        self.form_asset_log_prices = np.exp(self.form_asset_log_prices)
-        self.form_asset_log_prices = (
-            self.form_asset_log_prices / self.form_asset_log_prices[:, :1]
-        )
-        self.form_asset_log_prices = np.log(self.form_asset_log_prices)
-
-        self.train_env = initialize_env(
-            "train", self.form_date, asset_name, self.form_asset_log_prices
-        )
-        self.test_env = initialize_env(
-            "test", self.trad_date, asset_name, self.trad_asset_log_prices
-        )
 
         if kwargs["trading_num_process"] > 1:
 
@@ -530,16 +522,24 @@ class ReinforceTradingEnv(TradingEnv):
 
                 return _init
 
-            self.train_env = DummyVecEnv(
+            self.train_env = SubprocVecEnv(
                 [
                     make_env(
                         self.form_date,
                         asset_name,
                         self.form_asset_log_prices,
                     )
-                    for _ in range(kwargs["num_process"])
+                    for _ in range(kwargs["trading_num_process"])
                 ]
             )
+        else:
+            self.train_env = initialize_env(
+            "train", self.form_date, asset_name, self.form_asset_log_prices
+        )
+        
+        self.test_env = initialize_env(
+            "test", self.trad_date, asset_name, self.trad_asset_log_prices
+        )
 
         policy_kwargs = {
             "features_extractor_class": TRADING_FEATURE_EXTRACTORS[
@@ -552,15 +552,14 @@ class ReinforceTradingEnv(TradingEnv):
             },
         }
 
-        if kwargs.get("model") is not None:
-            self.model = kwargs.get("model")
+        if kwargs.get("worker_model") is not None:
+            self.worker_model = kwargs.get("worker_model")
         else:
-            logger.info("Initialize new model")
-            self.model = A2C(
+            logger.info("Initialize new worker model")
+            self.worker_model = A2C(
                 MultiInputPolicy,
                 self.train_env,
-                n_steps=kwargs["trading_train_steps"]
-                // kwargs["trading_num_process"],
+                n_steps=1, # batch_size: trading_num_process
                 learning_rate=kwargs["trading_learning_rate"],
                 tensorboard_log=kwargs["trading_log_dir"],
                 seed=kwargs["seed"],
@@ -570,22 +569,12 @@ class ReinforceTradingEnv(TradingEnv):
                 verbose=0,
             )
 
-        self.dump_env = initialize_env(
-            "train",
-            self.form_date,
-            asset_name,
-            self.form_asset_log_prices,
+        # Callback to obtain reward of manager from worker
+        self.trad_callback = TradingEvalCallback(
+            self.name,
+            self.test_env
         )
 
-        self.trad_callback = TradingEvalCallback(
-            self.test_env,
-        )
-        self.eval_callback = TradEvalCallback(
-            self.test_env,
-            self.train_env,
-            self.train_env,
-            eval_freq=10000,
-        )
         logger.info(
             f"Initialize env: form_len: {self.form_len} "
             f"asset_num: {self.asset_num} feature_dim: {self.feature_dim}"
@@ -643,11 +632,11 @@ class ReinforceTradingEnv(TradingEnv):
         self.set_trading_indexes(x_index, y_index)
 
         if self.train_step > 0 and not self.is_eval:
-            self.model.learn(
+            self.worker_model.learn(
                 total_timesteps=self.train_step,
                 reset_num_timesteps=False,
             )
-        self.trad_callback.model = self.model
+        self.trad_callback.model = self.worker_model
         self.trad_callback.on_step()
         info = self.trad_callback.best_metric
         reward = np.log(info["returns"][-1])
@@ -923,6 +912,7 @@ class StepTradingEnv(gym.Env):
 
         obs_idx = self.curr_idx - self.start_idx + self.window_size - 1
         self.observation["action"][obs_idx - 1] = int(action)
+        # sharpe_ratio依赖unrealized_net_value更新
         self.net_value[obs_idx] = curr_net_value
         self.unrealized_net_value[obs_idx] = unrealized_net_value
         sharpe_ratio = self.get_curr_sharpe_ratio()

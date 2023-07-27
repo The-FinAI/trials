@@ -162,7 +162,6 @@ def build_dataset(train, valid, test, asset_number, feature_dim):
 def train(args, run_id):
     """Train method"""
     set_random_seed(args.seed, using_cuda=True)
-    th.set_num_threads(args.num_process)
     logger.info(f"Start training for {args.rolling_serial}")
     logger.info(f"Load data from {args.rolling_dataset_path}")
     train = select_file_name(args.rolling_dataset_path, "train")
@@ -204,7 +203,7 @@ def train(args, run_id):
         serial_selection,
         asset_attention,
         trading_train_steps,
-        model,
+        worker_model,
     ):
         return Monitor(
             ReinforceTradingEnv(
@@ -219,7 +218,6 @@ def train(args, run_id):
                 feature_dim=feature_dim,
                 serial_selection=serial_selection,
                 asset_attention=asset_attention,
-                num_process=args.num_process,
                 trading_feature_extractor=args.trading_feature_extractor,
                 trading_feature_extractor_feature_dim=args.trading_feature_extractor_feature_dim,
                 trading_feature_extractor_num_layers=args.trading_feature_extractor_num_layers,
@@ -234,7 +232,7 @@ def train(args, run_id):
                 trading_rl_gamma=args.trading_rl_gamma,
                 trading_ent_coef=args.trading_ent_coef,
                 seed=args.seed,
-                model=model,
+                worker_model=worker_model,
             )
         )
 
@@ -256,7 +254,7 @@ def train(args, run_id):
         serial_selection,
         args.asset_attention,
         0,
-        train_env.model,
+        train_env.worker_model,
     )
     test_env = initialize_env(
         "test",
@@ -266,51 +264,8 @@ def train(args, run_id):
         serial_selection,
         args.asset_attention,
         0,
-        train_env.model,
+        train_env.worker_model,
     )
-
-    if args.num_process > 1:
-
-        def make_env(
-            asset_names,
-            train_dataset,
-            feature_dim,
-            seiral_selection,
-            asset_attention,
-            trading_train_steps,
-        ):
-            """
-            Utility function for multiprocessed env.
-            :return: (Callable)
-            """
-
-            def _init() -> gym.Env:
-                env = initialize_env(
-                    "train",
-                    asset_names,
-                    train_dataset,
-                    feature_dim,
-                    serial_selection,
-                    asset_attention,
-                    trading_train_steps,
-                )
-                return env
-
-            return _init
-
-        train_env = SubprocVecEnv(
-            [
-                make_env(
-                    asset_names,
-                    train_dataset,
-                    args.feature_dim,
-                    serial_selection,
-                    args.asset_attention,
-                    args.trading_train_steps,
-                )
-                for _ in range(args.num_process)
-            ]
-        )
 
     policy_kwargs = {
         "features_extractor_class": FEATURE_EXTRACTORS[args.feature_extractor],
@@ -345,6 +300,7 @@ def train(args, run_id):
         ent_coef=args.ent_coef,
         policy_kwargs=policy_kwargs,
         verbose=0,
+        n_steps=1
     )
 
     test_callback = BestDevRewardCallback(
@@ -364,14 +320,14 @@ def train(args, run_id):
             serial_selection,
             args.asset_attention,
             0,
-            train_env.model,
+            train_env.worker_model,
         ),
         patience_steps=args.patience_steps,
         best_model_save_path=args.saved_model_dir,
         callback_on_new_best=test_callback,
         verbose=0,
         n_eval_episodes=1,
-        eval_freq=args.eval_freq // args.num_process,
+        eval_freq=args.eval_freq,
         deterministic=True,
         render=False,
         exclude_names=[],
@@ -415,7 +371,6 @@ def main(
     dropout: float = 0.5,
     rl_gamma: float = 1,
     ent_coef: float = 1e-4,
-    num_process: int = 1,
     project: str = "learning_to_pair",
     entity: str = "jimin",
     trading_train_steps: int = 1e3,
@@ -428,7 +383,7 @@ def main(
     trading_log_dir: str = "trading_log",
     trading_rl_gamma: float = 1,
     trading_ent_coef: float = 1e-4,
-    trading_num_process: int = 1,
+    trading_num_process: int = 1
 ) -> None:
     """
     Train l2r and its ablations
@@ -476,7 +431,6 @@ def main(
         dropout=dropout,
         rl_gamma=rl_gamma,
         ent_coef=ent_coef,
-        num_process=num_process,
         project=project,
         entity=entity,
         trading_train_steps=trading_train_steps,
@@ -489,13 +443,13 @@ def main(
         trading_log_dir=trading_log_dir,
         trading_rl_gamma=trading_rl_gamma,
         trading_ent_coef=trading_ent_coef,
-        trading_num_process=trading_num_process,
+        trading_num_process=trading_num_process
     )
     run = wandb.init(
         config=args,
         sync_tensorboard=False,
         monitor_gym=False,
-        dir="/data/huangjimin",
+        dir="/data/user_name",
     )
     train(wandb.config, run.id)
 
