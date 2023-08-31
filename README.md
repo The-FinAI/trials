@@ -8,7 +8,7 @@
 [![pre-commit](https://img.shields.io/badge/Pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![poetry](https://img.shields.io/badge/Poetry-config-informational?logo=poetry&logoColor=white)](https://python-poetry.org)
 [![license](https://img.shields.io/badge/License-MIT-green.svg?labelColor=gray)](https://github.com/lazaratan/dyn-gfn/blob/main/LICENSE)
-![Discord](https://img.shields.io/discord/1146837080798933112)
+[![Discord](https://img.shields.io/discord/1146837080798933112)](https://discord.gg/HRWpUmKB)
 
 Automatic Pair Trading
 
