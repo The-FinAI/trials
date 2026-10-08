@@ -1,63 +1,67 @@
-# Trials
+<div align="center">
 
-[![zh](https://img.shields.io/badge/lang-zh-red.svg)](https://github.com/chancefocus/trials/blob/main/README.zh.md)
-[![en](https://img.shields.io/badge/lang-en-green.svg)](https://github.com/chancefocus/trials/blob/main/README.md)
-[![python](https://img.shields.io/badge/-Python_3.8-blue?logo=python&logoColor=white)](https://github.com/pre-commit/pre-commit)
+<h1>Trials</h1>
+
+<p><b>Select and Trade: Towards Unified Pair Trading with Hierarchical Reinforcement Learning</b></p>
+
+[![arXiv](https://img.shields.io/badge/arXiv-2301.10724-b31b1b.svg)](https://arxiv.org/abs/2301.10724)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![python](https://img.shields.io/badge/-Python_3.8-blue?logo=python&logoColor=white)](https://www.python.org)
 [![pytorch](https://img.shields.io/badge/PyTorch_1.8+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org/get-started/locally/)
 [![black](https://img.shields.io/badge/Code%20Style-Black-black.svg?labelColor=gray)](https://black.readthedocs.io/en/stable/)
 [![pre-commit](https://img.shields.io/badge/Pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![poetry](https://img.shields.io/badge/Poetry-config-informational?logo=poetry&logoColor=white)](https://python-poetry.org)
-[![license](https://img.shields.io/badge/License-MIT-green.svg?labelColor=gray)](https://github.com/lazaratan/dyn-gfn/blob/main/LICENSE)
-[![Discord](https://img.shields.io/discord/1146837080798933112)](https://discord.gg/HRWpUmKB)
 
-Automatic Pair Trading
+[![en](https://img.shields.io/badge/lang-en-green.svg)](README.md)
+[![zh](https://img.shields.io/badge/lang-zh-red.svg)](README.zh.md)
 
+<a href="https://arxiv.org/abs/2301.10724">Paper</a>
 
-<img
-src="assets/trials.jpg"
-title="Trials Overview"
-style="display: inline-block; margin: 0 auto; max-width: 800px">
+</div>
 
-## Description
-Our codebase trials provide an implementation of the [Select and Trade](https://arxiv.org/abs/2301.10724) paper, which proposes a new paradigm for pair trading using hierarchical reinforcement learning. It includes the code for the proposed method and experimental results on real-world stock data to demonstrate its effectiveness.
+<p align="center">
+<img src="assets/trials.jpg" title="Trials Overview" alt="Trials Overview" style="max-width: 800px; width: 100%;">
+</p>
 
-## Maintainer
-[Boyi Zhang](https://github.com/zbgzbgzbg)
+## Overview
 
+Automatic pair trading. This codebase, **trials**, provides an implementation of the [Select and Trade](https://arxiv.org/abs/2301.10724) paper, which proposes a new paradigm for pair trading using hierarchical reinforcement learning. It includes the code for the proposed method and experimental results on real-world stock data (U.S. S&P 500 and China CSI 300) to demonstrate its effectiveness.
 
-## Prerequisite
+**Maintainer:** [Boyi Zhang](https://github.com/zbgzbgzbg)
 
-The requirements to develop the project.
+## Prerequisites
+
+The requirements to develop the project:
 
 - Python ^3.8
 - Git
 - Poetry
 - Python IDE (Visual Studio Code is recommended!)
 
-**⚠️ Read the official manual or documentation of following projects before write any code ⚠️**:
-
-- `git`, a version control system
-- `Poetry`, a python library to manage project dependencies
-- `towncrier`, a changelog generater
-- `pre-commit`, a git commit hook runner
-- `commitizen`, a semantic version manager
+> [!IMPORTANT]
+> Read the official manual or documentation of the following projects before writing any code:
+>
+> - `git`, a version control system
+> - `Poetry`, a Python library to manage project dependencies
+> - `towncrier`, a changelog generator
+> - `pre-commit`, a git commit hook runner
+> - `commitizen`, a semantic version manager
 
 ## Data Preparation
 
-1. Download the symbols of target stocks and put the .csv file containing the symbols of the target stocks into selected_symbol_path； Download the processed data put all .csv files containing stock datas into stock_path
+1. Download the symbols of target stocks and put the .csv file containing the symbols of the target stocks into `selected_symbol_path`. Download the processed data and put all .csv files containing stock datas into `stock_path`
 
-2. You can download the data of US stocks from the following website：[Tiingo stock marke](https://api.tiingo.com/documentation/iex)
+2. You can download the data of US stocks from the following website: [Tiingo stock market](https://api.tiingo.com/documentation/iex)
 
-3. Select and process eligible U.S.S&P 500 stocks by running(The processing steps of the Chinese stock dataset are the same as the following):
+3. Select and process eligible U.S.S&P 500 stocks by running (the processing steps of the Chinese stock dataset are the same as the following):
 
 ```bash
 python trials/preprocess/U.S.SP500-selected.py selected_symbol_path stock_path store_path begin_time end_time
-
 ```
 
 - `selected_symbol_path`, Stock symbols to be selected are stored in selected_symbol_path
 - `stock_path`, All stocks are stored in stock_path
-- `store_path`,  Eligible U.S.S&P 500 stocks that have been screened and processed are stored in store_path
+- `store_path`, Eligible U.S.S&P 500 stocks that have been screened and processed are stored in store_path
 - `begin_time`, The start time of the stocks to be screened. For example: '2000-01-01'
 - `end_time`, The end time of the stocks to be screened. For example: '2020-12-31'
 
@@ -65,33 +69,31 @@ python trials/preprocess/U.S.SP500-selected.py selected_symbol_path stock_path s
 
 ```bash
 python trials/preprocess/random_stocks_selected.py symbols_num_each_rolling, stock_data_path, random_symbol_path
-
 ```
 
 - `symbols_num_each_rolling`, The number of stocks contained in each rolling
 - `stock_data_path`, All U.S.S&P 500 stocks data screened by U.S.SP500-selected.py are stored in stock_data_path
 - `random_symbol_path`, The stocks symbols in each rolling are stored in random_symbol_path
 
-5. Form datasets for each period of each rolling in the form of .csv. by running:
+5. Form datasets for each period of each rolling in the form of .csv by running:
 
 ```bash
 python trials/preprocess/rolling.py stock_data_path store_path training_month validation_month testing_month random_symbol_path csv_name1 csv_name2 csv_name3
-
 ```
 
 - `stock_data_path`, All U.S.S&P 500 stocks data screened by U.S.SP500-selected.py are stored in stock_data_path
 - `store_path`, The final .csv files are stored in store_path
 - `training_month`, The number of months included in the training
 - `validation_month`, The number of months included in the validation
-- `testing_month`,The number of months included in the testing
+- `testing_month`, The number of months included in the testing
 - `random_symbol_path`, The stock symbols included in each rolling that are randomly generated by random_stocks_selected.py in advance are stored in random_symbol_path
 
-6. We provide a subset of the processed dataset, please check it in /trials/data/.
+6. We provide a subset of the processed dataset, please check it in `trials/data/`.
 
 
-## How to Run?
+## Usage
 
-1. Single Run
+### 1. Single Run
 
 ```bash
 poetry run trials/scripts/train_trials.py
@@ -99,16 +101,17 @@ poetry run trials/scripts/train_trials.py
 
 See all parameters and their illustrations by `poetry run trials/scripts/train_trials.py --help`
 
-2. Hyperparameter Search
-   We recommend to use hyperparamete search by wandb sweep.
+### 2. Hyperparameter Search
 
-Start with a template `sweep.yaml` to define searching parameters and values, then simply run:
+We recommend using hyperparameter search with wandb sweep.
+
+Start with the template `trials_sweep.yaml` to define searching parameters and values, then simply run:
 
 ```bash
-wandb sweep rl_sweep.yaml
+wandb sweep trials_sweep.yaml
 ```
 
-After showing
+After it shows
 
 ```bash
 wandb: Run sweep agent with: wandb agent xxx/xxxxxxx/[sweep-id]
@@ -126,36 +129,21 @@ Or you can start multiple agents with the script:
 bash train_trials.sh [sweep-id] [num-process-per-gpu]
 ```
 
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-## Feel free to cite our paper
-```
-@misc{han2023select,
-      title={Select and Trade: Towards Unified Pair Trading with Hierarchical Reinforcement Learning}, 
-      author={Weiguang Han and Boyi Zhang and Qianqian Xie and Min Peng and Yanzhao Lai and Jimin Huang},
-      year={2023},
-      eprint={2301.10724},
-      archivePrefix={arXiv},
-      primaryClass={q-fin.CP}
-}
-```
 ## Main Results
 
-S&P 500:
+### S&P 500
+
 |          |          | GGR      | Cointegration | Correlation | Wang     | TRIALS    | TRIALS wo TR |
 |----------|------------|----------|---------------|-------------|----------|-----------|--------------|
 | Subset 1 | SR↑        | -0.390   | -1.557        | -1.263      | 1.323    | **1.573** | -0.075       |
 |          | ED↓        | **0.008** | 0.036         | 0.010       | 0.036    | 0.027     | 0.011        |
-|          | MDD↑       | -0.146   | -0.407        | -0.227      | -0.111   | -**0.093** | -0.325       |
+|          | MDD↑       | -0.146   | -0.407        | -0.227      | -0.111   | **-0.093** | -0.325       |
 |          | AR↑        | -0.031   | -0.392        | -0.141      | 0.320    | **0.512** | -0.039       |
 |          | AV↓        | **0.118** | 0.303         | 0.130       | 0.210    | 0.272     | 0.284        |
 |          | Asset Pair | PG-TGT   | SPG_SWKS      | LMT-UNH     | SPG-SWKS | RTX-WY    | ED-WY        |
 | Subset 2 | SR↑        | -2.005   | -1.836        | -1.576      | 0.735    | **2.099** | -0.078       |
 |          | ED↓        | 0.015    | 0.008         | **0.006**   | 0.008    | 0.037     | 0.010        |
-|          | MDD↑       | -0.334   | -0.249        | -0.223      | -**0.085** | -0.112    | -0.212       |
+|          | MDD↑       | -0.334   | -0.249        | -0.223      | **-0.085** | -0.112    | -0.212       |
 |          | AR↑        | -0.290   | -0.201        | -0.189      | 0.139    | **0.641** | -0.012       |
 |          | AV↓        | 0.174    | **0.129**     | 0.140       | 0.167    | 0.240     | 0.192        |
 |          | Asset Pair | AMGN-JPM | BLK-FMC       | NEE-ROP     | BLK-FMC  | ALB-EQR   | AMGN-MS      |
@@ -188,7 +176,8 @@ S&P 500:
 |          | AR↓        | 0.095    | 0.204         | 0.046       | 0.108    | 0.141     | **0.038**    |
 |          | AV↓        | 0.033    | 0.202         | **0.021**   | 0.057    | 0.044     | 0.037        |
 
-CSI 300:
+### CSI 300
+
 |          |            | GGR           | Cointegration | Correlation   | Wang          | TRIALS        | TRIALS wo TR  |
 | -------- | ---------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
 | Subset 1 | SR↑        | 0.021         | -2.259        | -1.000        | 0.110         | **1.558**     | 1.491         |
@@ -223,7 +212,7 @@ CSI 300:
 |          | Asset Pair | 600215-921    | 600006-600115 | 46-600639     | 600006-600115 | 559-600074    | 553-600621    |
 | Mean     | SR↑        | -1.189        | -1.497        | -1.372        | 0.750         | **1.906**     | 0.950         |
 |          | ED↓        | **0.013**     | 0.017         | 0.015         | 0.017         | 0.046         | 0.019         |
-|          | MDD↑       | -0.292        | -0.289        | -0.254        | -0.182        | -0.139        | -**0.122**    |
+|          | MDD↑       | -0.292        | -0.289        | -0.254        | -0.182        | -0.139        | **-0.122**    |
 |          | AR↑        | -0.175        | -0.248        | -0.208        | 0.237         | **0.677**     | 0.132         |
 |          | AV↓        | 0.184         | 0.198         | 0.174         | 0.251         | 0.261         | **0.172**     |
 | STD      | SR↓        | 0.736         | 0.969         | **0.245**     | 0.678         | 0.877         | 0.877         |
@@ -232,3 +221,29 @@ CSI 300:
 |          | AR↓        | **0.106**     | 0.175         | 0.068         | 0.229         | 0.513         | 0.118         |
 |          | AV↓        | **0.035**     | 0.035         | 0.045         | 0.074         | 0.087         | 0.075         |
 
+## Citation
+
+Feel free to cite our paper:
+
+```bibtex
+@misc{han2023select,
+      title={Select and Trade: Towards Unified Pair Trading with Hierarchical Reinforcement Learning}, 
+      author={Weiguang Han and Boyi Zhang and Qianqian Xie and Min Peng and Yanzhao Lai and Jimin Huang},
+      year={2023},
+      eprint={2301.10724},
+      archivePrefix={arXiv},
+      primaryClass={q-fin.CP}
+}
+```
+
+## License
+
+The code in this repository is released under the [MIT License](LICENSE). Datasets and models on Hugging Face keep their own licenses, stated on each card.
+
+---
+
+<div align="center">
+
+Built by [The Fin AI](https://thefin.ai) · [Hugging Face](https://huggingface.co/TheFinAI) · [GitHub](https://github.com/The-FinAI)
+
+</div>
